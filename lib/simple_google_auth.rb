@@ -1,3 +1,5 @@
+require 'net/https'
+
 module SimpleGoogleAuth
   Config = Struct.new(
     :client_id,
