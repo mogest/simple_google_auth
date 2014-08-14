@@ -12,7 +12,8 @@ module SimpleGoogleAuth
     :google_auth_url,
     :google_token_url,
     :state_session_key_name,
-    :data_session_key_name
+    :data_session_key_name,
+    :request_parameters
   )
 
   mattr_accessor :config
@@ -23,13 +24,12 @@ module SimpleGoogleAuth
   end
 
   def self.uri(state)
-    query = {
+    query = config.request_parameters.merge(
       response_type: "code",
-      client_id: config.client_id,
-      redirect_uri: config.redirect_uri,
-      scope: "openid email",
-      state: state
-    }
+      client_id:     config.client_id,
+      redirect_uri:  config.redirect_uri,
+      state:         state
+    )
 
     "#{config.google_auth_url}?" + query.map {|k, v| "#{k}=#{CGI.escape v}"}.join("&")
   end
@@ -42,6 +42,7 @@ SimpleGoogleAuth.configure do |config|
   config.state_session_key_name = "simple-google-auth.state"
   config.data_session_key_name = "simple-google-auth.data"
   config.failed_login_path = "/"
+  config.request_parameters = {scope: "openid email"}
   config.authenticate = lambda { raise "You must define an authenticate lambda that sets the session" }
 end
 

@@ -6,7 +6,7 @@ This is a dead simple gem that allows you to require a Google login for parts of
 You can allow any user with a Google account, or limit access to certain users based on their
 Google e-mail address.
 
-Being simple, it's slightly limited in what it can do.  But if your goal is to put your site
+Being simple, it's limited in what it can do.  But if your goal is to put your site
 behind a Google login instead of a crusty basic auth box, it'll do the trick. 
 If you're after more power, there are quite a few gems that'll do what you're looking for,
 such as OmniAuth's Google strategy.
@@ -86,6 +86,7 @@ google_auth_url | `"https://accounts.google.com/o/oauth2/auth"` | Google's authe
 google_token_url | `"https://accounts.google.com/o/oauth2/token"` | Google's token URL.
 state_session_key_name | `"simple-google-auth.state"` | The name of the session variable used to store a random string used to prevent CSRF attacks during authentication.
 data_session_key_name | `"simple-google-auth.data"` | The name of the session variable used to store identification data from Google.
+request_parameters | {scope: "openid email"} | Parameters to use when requesting a login from Google
 
 ## Licence
 
