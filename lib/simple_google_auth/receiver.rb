@@ -68,7 +68,7 @@ module SimpleGoogleAuth
 
     def decode_id_data(auth_data)
       id_data_64 = auth_data["id_token"].split(".")[1]
-      id_data_64 << "=" until id_data_64.length % 3 == 0
+      id_data_64 << "=" until id_data_64.length % 4 == 0
       id_data = JSON.parse(Base64.decode64(id_data_64))
     end
   end
