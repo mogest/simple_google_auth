@@ -12,7 +12,7 @@ module SimpleGoogleAuth
 
       raise Error, "Authentication failed" unless config.authenticate.call(id_data)
 
-      request.session[config.data_session_key_name] = id_data
+      request.session[config.data_session_key_name] = id_data.merge(auth_data)
 
       path = request.session[config.state_session_key_name][32..-1]
       path = "/" if path.blank?
@@ -67,9 +67,9 @@ module SimpleGoogleAuth
     end
 
     def decode_id_data(auth_data)
-      id_data_64 = auth_data["id_token"].split(".")[1]
+      id_data_64 = auth_data.delete("id_token").split(".")[1]
       id_data_64 << "=" until id_data_64.length % 4 == 0
-      id_data = JSON.parse(Base64.decode64(id_data_64))
+      JSON.parse(Base64.decode64(id_data_64))
     end
   end
 end
