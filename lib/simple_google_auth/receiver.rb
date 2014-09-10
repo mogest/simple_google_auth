@@ -5,14 +5,14 @@ module SimpleGoogleAuth
     def call(env)
       request = Rack::Request.new(env)
       config = SimpleGoogleAuth.config
-
       ensure_params_are_correct(request, config)
-      auth_data = obtain_authentication_data(request.params["code"], config)
-      id_data = decode_id_data(auth_data.delete("id_token"))
 
-      raise Error, "Authentication failed" unless config.authenticate.call(id_data)
+      api = SimpleGoogleAuth::OAuth.new(config)
+      auth_data = api.exchange_code_for_auth_token!(request.params["code"])
 
-      request.session[config.data_session_key_name] = id_data.merge(auth_data)
+      raise Error, "Authentication failed" unless config.authenticate.call(auth_data)
+
+      request.session[config.data_session_key_name] = auth_data
 
       path = request.session[config.state_session_key_name][32..-1]
       path = "/" if path.blank?
@@ -34,42 +34,6 @@ module SimpleGoogleAuth
       elsif request.params["code"].nil?
         raise Error, "No authentication code returned"
       end
-    end
-
-    def obtain_authentication_data(code, config)
-      uri = URI(config.google_token_url)
-
-      http = Net::HTTP.new(uri.host, uri.port)
-      if uri.scheme == "https"
-        http.use_ssl = true
-        if config.ca_path
-          http.verify_mode = OpenSSL::SSL::VERIFY_PEER
-          http.ca_path = config.ca_path
-        else
-          http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-          Rails.logger.warn "SimpleGoogleAuth does not have a ca_path configured; SSL with Google is not protected"
-        end
-      end
-
-      request = Net::HTTP::Post.new(uri.request_uri)
-      request.set_form_data(
-        code: code,
-        client_id: config.get_or_call(:client_id),
-        client_secret: config.get_or_call(:client_secret),
-        redirect_uri: config.redirect_uri,
-        grant_type: "authorization_code"
-      )
-
-      response = http.request(request)
-      raise Error, "Failed to get an access token" unless response.is_a?(Net::HTTPSuccess)
-
-      JSON.parse(response.body)
-    end
-
-    def decode_id_data(id_data)
-      id_data_64 = id_data.split(".")[1]
-      id_data_64 << "=" until id_data_64.length % 4 == 0
-      JSON.parse(Base64.decode64(id_data_64))
     end
   end
 end

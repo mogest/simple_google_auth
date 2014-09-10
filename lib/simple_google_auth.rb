@@ -33,7 +33,9 @@ module SimpleGoogleAuth
       response_type: "code",
       client_id:     config.get_or_call(:client_id),
       redirect_uri:  config.redirect_uri,
-      state:         state
+      access_type:   "offline",
+      state:         state,
+      approval_prompt: "force"
     )
 
     "#{config.google_auth_url}?" + query.map {|k, v| "#{k}=#{CGI.escape v}"}.join("&")
@@ -51,6 +53,8 @@ SimpleGoogleAuth.configure do |config|
   config.authenticate = lambda { raise "You must define an authenticate lambda that sets the session" }
 end
 
+require 'simple_google_auth/http_client'
+require 'simple_google_auth/oauth'
 require 'simple_google_auth/engine'
 require 'simple_google_auth/controller'
 require 'simple_google_auth/receiver'
