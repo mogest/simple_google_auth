@@ -54,8 +54,8 @@ module SimpleGoogleAuth
       request = Net::HTTP::Post.new(uri.request_uri)
       request.set_form_data(
         code: code,
-        client_id: config.client_id,
-        client_secret: config.client_secret,
+        client_id: config.get_or_call(:client_id),
+        client_secret: config.get_or_call(:client_secret),
         redirect_uri: config.redirect_uri,
         grant_type: "authorization_code"
       )

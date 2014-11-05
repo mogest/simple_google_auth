@@ -14,7 +14,12 @@ module SimpleGoogleAuth
     :state_session_key_name,
     :data_session_key_name,
     :request_parameters
-  )
+  ) do
+    def get_or_call(attribute)
+      value = send(attribute)
+      value.respond_to?(:call) ? value.call : value
+    end
+  end
 
   mattr_accessor :config
   self.config = Config.new
@@ -26,7 +31,7 @@ module SimpleGoogleAuth
   def self.uri(state)
     query = config.request_parameters.merge(
       response_type: "code",
-      client_id:     config.client_id,
+      client_id:     config.get_or_call(:client_id),
       redirect_uri:  config.redirect_uri,
       state:         state
     )
