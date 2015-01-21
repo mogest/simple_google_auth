@@ -11,21 +11,30 @@ module SimpleGoogleAuth
     end
 
     def google_auth_data
+      return unless google_auth_data_from_session
+
       refresh_google_auth_data if google_auth_data_stale?
-      session[SimpleGoogleAuth.config.data_session_key_name]
+      google_auth_data_from_session
     end
 
     private
 
     def refresh_google_auth_data
-      api = SimpleGoogleAuth::Oauth.new(SimpleGoogleAuth.config)
-      auth_data = api.refresh_auth_token!(google_auth_data["refresh_token"])
+      api = SimpleGoogleAuth::OAuth.new(SimpleGoogleAuth.config)
+
+      auth_data = api.refresh_auth_token!(google_auth_data_from_session["refresh_token"])
+
       session[SimpleGoogleAuth.config.data_session_key_name] = auth_data
     end
 
+    def google_auth_data_from_session
+      session[SimpleGoogleAuth.config.data_session_key_name]
+    end
 
     def google_auth_data_stale?
-      Time.parse(google_auth_data["expires_at"]).past?
+      expiry_time = google_auth_data_from_session["expires_at"]
+
+      expiry_time.nil? || Time.parse(expiry_time).past?
     end
   end
 end
