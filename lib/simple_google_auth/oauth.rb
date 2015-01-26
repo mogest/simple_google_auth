@@ -17,6 +17,8 @@ module SimpleGoogleAuth
     end
 
     def refresh_auth_token!(refresh_token)
+      return if refresh_token.blank?
+
       response = @client.request(
         refresh_token: refresh_token,
         client_id: @config.client_id,

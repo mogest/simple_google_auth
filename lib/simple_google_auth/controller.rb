@@ -13,7 +13,9 @@ module SimpleGoogleAuth
     def google_auth_data
       return unless google_auth_data_from_session
 
-      refresh_google_auth_data if google_auth_data_stale?
+      if should_refresh_google_auth_data?
+        refresh_google_auth_data
+      end
       google_auth_data_from_session
     end
 
@@ -29,6 +31,10 @@ module SimpleGoogleAuth
 
     def google_auth_data_from_session
       session[SimpleGoogleAuth.config.data_session_key_name]
+    end
+
+    def should_refresh_google_auth_data?
+      SimpleGoogleAuth.config.refresh_stale_tokens && google_auth_data_stale?
     end
 
     def google_auth_data_stale?

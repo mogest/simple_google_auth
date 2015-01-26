@@ -13,7 +13,8 @@ module SimpleGoogleAuth
     :google_token_url,
     :state_session_key_name,
     :data_session_key_name,
-    :request_parameters
+    :request_parameters,
+    :refresh_stale_tokens
   ) do
     def get_or_call(attribute)
       value = send(attribute)
@@ -26,6 +27,10 @@ module SimpleGoogleAuth
 
   def self.configure
     yield config
+
+    if config.refresh_stale_tokens
+      config.request_parameters.merge!({ access_type: "offline" })
+    end
   end
 
   def self.uri(state)
@@ -33,9 +38,7 @@ module SimpleGoogleAuth
       response_type: "code",
       client_id:     config.get_or_call(:client_id),
       redirect_uri:  config.redirect_uri,
-      access_type:   "offline",
-      state:         state,
-      approval_prompt: "force"
+      state:         state
     )
 
     "#{config.google_auth_url}?" + query.map {|k, v| "#{k}=#{CGI.escape v}"}.join("&")
