@@ -70,7 +70,7 @@ Take a look at https://developers.google.com/accounts/docs/OAuth2Login#obtainuse
 
 ## Refreshing tokens and offline mode
 
-By default simple_google_auth doesn't refresh doesn't check the expiry time
+By default simple_google_auth doesn't check the expiry time
 on the credentials after they've been loaded from google the first time.
 This is less hassle if all you want is simple authentication for your site,
 but prevents you from using the credentials for other uses (eg. GCal integration)
