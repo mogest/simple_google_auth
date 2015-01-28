@@ -13,7 +13,8 @@ module SimpleGoogleAuth
     :google_token_url,
     :state_session_key_name,
     :data_session_key_name,
-    :request_parameters
+    :request_parameters,
+    :refresh_stale_tokens
   ) do
     def get_or_call(attribute)
       value = send(attribute)
@@ -26,6 +27,10 @@ module SimpleGoogleAuth
 
   def self.configure
     yield config
+
+    if config.refresh_stale_tokens
+      config.request_parameters.merge!({ access_type: "offline" })
+    end
   end
 
   def self.uri(state)
@@ -51,6 +56,8 @@ SimpleGoogleAuth.configure do |config|
   config.authenticate = lambda { raise "You must define an authenticate lambda that sets the session" }
 end
 
+require 'simple_google_auth/http_client'
+require 'simple_google_auth/oauth'
 require 'simple_google_auth/engine'
 require 'simple_google_auth/controller'
 require 'simple_google_auth/receiver'
