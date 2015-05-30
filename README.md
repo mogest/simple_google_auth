@@ -18,13 +18,13 @@ Follow these five steps to integrate with your site.
 Step 1: Make yourself a project at https://cloud.google.com/console, if you haven't already.
 
 Step 2: In that project, go to the "APIs & auth" tab, then the "Credentials" tab.  Create a new client ID of application type "Web application".  Set the Authorized Redirect URI to
-`http://yoursite.com/google-callback`.  You might want to put in `http://localhost:3000/google-callback` so you can test locally too.
+`https://yoursite.com/google-callback`.  You might want to put in `http://localhost:3000/google-callback` so you can test locally too.
 
-Step 3: Add simple_google_auth to your Gemfile
+Step 3: Add simple_google_auth to your Gemfile and run bundle
 
     gem 'simple_google_auth'
 
-Step 4: In your application.rb, put down some code inside the Application class:
+Step 4: Add the following code to your application.rb and tweak it with your site's values
 
     SimpleGoogleAuth.configure do |config|
       config.client_id = "the client ID as supplied by Google in step 2"
@@ -40,7 +40,7 @@ Step 5: In your application_controller.rb, add a before filter:
     before_filter :redirect_if_not_google_authenticated
 
 Done!  Any request to your site will now redirect off to Google for authentication.
-A route that captures requests coming in to /google-callback is automatically created and handled for you.
+A route that captures requests coming in to `/google-callback` is automatically created and handled for you.
 
 If you log in with `your.email@example.com`, it'll let you in to the site and take you to the page you were initially trying to go to.
 Otherwise it'll redirect to `/` (by default) with `params[:message]` set to the authentication error.
@@ -100,7 +100,7 @@ send you the refresh token every time your users authenticate.
     end
 
 For more details on offline mode and approval_prompt refer to the 
-#[Google OAuth documentation](https://developers.google.com/accounts/docs/OAuth2WebServer).
+[Google OAuth documentation](https://developers.google.com/accounts/docs/OAuth2WebServer).
 
 ## Configuring
 
@@ -128,5 +128,5 @@ MIT.  Copyright 2014-2015 Roger Nesbitt, Powershop New Zealand Limited.
 
 ## Authors and contributors
 
-Roger Nesbitt <roger@seriousorange.com>
-Andy Newport
+ - Roger Nesbitt <roger@seriousorange.com>
+ - Andy Newport
