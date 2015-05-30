@@ -71,14 +71,14 @@ Take a look at https://developers.google.com/accounts/docs/OAuth2Login#obtainuse
 ## Refreshing tokens and offline mode
 
 By default simple_google_auth doesn't check the expiry time
-on the credentials after they've been loaded from google the first time.
+on the credentials after they've been loaded from Google the first time.
 This is less hassle if all you want is simple authentication for your site,
 but prevents you from using the credentials for other uses (eg. GCal integration)
-because the oauth tokens will expire and google won't accept them anymore.
+because the oauth tokens will expire and Google won't accept them anymore.
 
 If you want the tokens to be refreshed when they expire then you need to
 add an extra line to your config. Doing so will ensure that your
-google auth tokens never get stale and allow you to use offline mode.
+Google auth tokens never get stale and allow you to use offline mode.
 
     SimpleGoogleAuth.configure do |config|
       config.refresh_stale_tokens = true
@@ -89,17 +89,17 @@ be checked to make sure it's not stale. If it is stale the tokens will be
 refreshed before being returned.
 
 If your users have already allowed your site access to a certain set of scopes
-google won't re-issue you a refresh_token automatically. You'll need to set an
-extra param in the request_parameters configuration hash to force google to
+Google won't re-issue you a refresh_token automatically. You'll need to set an
+extra param in the request_parameters configuration hash to force Google to
 send you the refresh token every time your users authenticate.
 
     SimpleGoogleAuth.configure do |config|
       config.refresh_stale_tokens = true
-      config.request_parameters.merge!({ approval_prompt: "force" })
+      config.request_parameters.merge!(approval_prompt: "force")
     end
 
-For more details on offline mode and approval_prompt refer to the google OAuth docs, as of
-writing you can find them #[here](https://developers.google.com/accounts/docs/OAuth2WebServer).
+For more details on offline mode and approval_prompt refer to the 
+#[Google OAuth documentation](https://developers.google.com/accounts/docs/OAuth2WebServer).
 
 ## Configuring
 
@@ -113,7 +113,6 @@ redirect_uri | (required) | Where Google should redirect to after authentication
 redirect_path | `nil` | A route is created at this path.  If no path is specified, the path is taken from redirect_uri.
 authenticate | (required) | A lambda that's run to determine whether the user should be accepted as valid or not.  Takes one argument, a hash of identification data as provided by Google.  Should return true on success, or false if the login should not proceed.
 failed_login_path | `"/"` | Where to redirect to upon a failed login.  `params[:message]` will be set with the error that occurred.
-ca_path | `"/etc/ssl/certs"` | A path or file of SSL certificates, used to check that we're really talking to the Google servers.
 google_auth_url | `"https://accounts.google.com/o/oauth2/auth"` | Google's authentication URL.
 google_token_url | `"https://accounts.google.com/o/oauth2/token"` | Google's token URL.
 state_session_key_name | `"simple-google-auth.state"` | The name of the session variable used to store a random string used to prevent CSRF attacks during authentication.
@@ -123,3 +122,8 @@ request_parameters | {scope: "openid email"} | Parameters to use when requesting
 ## Licence
 
 MIT.
+
+## Authors and contributors
+
+Roger Nesbitt <roger@seriousorange.com>
+Andy Newport
