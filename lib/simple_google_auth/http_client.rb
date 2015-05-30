@@ -1,8 +1,5 @@
 module SimpleGoogleAuth
   class HttpClient
-    Error = Class.new(StandardError)
-    NonJsonResponseError = Class.new(Error)
-
     def initialize(url)
       @uri = URI(url)
       @http = Net::HTTP.new(@uri.host, @uri.port)
@@ -29,7 +26,7 @@ module SimpleGoogleAuth
       end
 
       if response.code !~ /\A2\d\d\z/
-        raise Error, "The server responded with error #{response.code}: #{data.inspect}"
+        raise ProviderError, "The server responded with error #{response.code}: #{data.inspect}"
       end
 
       data

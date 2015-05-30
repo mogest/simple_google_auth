@@ -1,7 +1,5 @@
 module SimpleGoogleAuth
   class Receiver
-    Error = Class.new(StandardError)
-
     def call(env)
       request = Rack::Request.new(env)
       config = SimpleGoogleAuth.config

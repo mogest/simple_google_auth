@@ -1,7 +1,5 @@
 module SimpleGoogleAuth
   class OAuth
-    Error = Class.new(StandardError)
-
     def initialize(config)
       @config = config
       @client = HttpClient.new(@config.google_token_url)

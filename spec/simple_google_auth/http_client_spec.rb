@@ -43,7 +43,7 @@ describe SimpleGoogleAuth::HttpClient do
       end
 
       it "raises an error" do
-        expect { subject.request('some' => 'data') }.to raise_error(SimpleGoogleAuth::HttpClient::NonJsonResponseError, /non-JSON/)
+        expect { subject.request('some' => 'data') }.to raise_error(SimpleGoogleAuth::NonJsonResponseError, /non-JSON/)
       end
     end
 
@@ -58,7 +58,7 @@ describe SimpleGoogleAuth::HttpClient do
       end
 
       it "raises an error" do
-        expect { subject.request('some' => 'data') }.to raise_error(SimpleGoogleAuth::HttpClient::NonJsonResponseError, /parseable/)
+        expect { subject.request('some' => 'data') }.to raise_error(SimpleGoogleAuth::NonJsonResponseError, /parseable/)
       end
     end
 
@@ -73,7 +73,7 @@ describe SimpleGoogleAuth::HttpClient do
       end
 
       it "raises an error" do
-        expect { subject.request('some' => 'data') }.to raise_error(SimpleGoogleAuth::HttpClient::Error, /400.+very/)
+        expect { subject.request('some' => 'data') }.to raise_error(SimpleGoogleAuth::ProviderError, /400.+very/)
       end
     end
   end

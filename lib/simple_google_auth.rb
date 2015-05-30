@@ -5,6 +5,10 @@ module SimpleGoogleAuth
   mattr_accessor :config
   self.config = Config.new
 
+  Error = Class.new(StandardError)
+  ProviderError = Class.new(Error)
+  NonJsonResponseError = Class.new(ProviderError)
+
   def self.configure
     yield config
 
