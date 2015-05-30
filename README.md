@@ -45,10 +45,11 @@ A route that captures requests coming in to /google-callback is automatically cr
 If you log in with `your.email@example.com`, it'll let you in to the site and take you to the page you were initially trying to go to.
 Otherwise it'll redirect to `/` (by default) with `params[:message]` set to the authentication error.
 
-## Setting up multiple environments
+## Setting up a production environment
 
 You might want to put a different configure block in your development.rb and production.rb, each specifying
-a different redirect URI.  Just pop them on the end of the file.
+a different redirect URI.  Just pop them on the end of the file.  You can also have different client IDs and
+secrets, or authentication criteria.
 
     # development.rb
     SimpleGoogleAuth.configure do |config|
@@ -107,8 +108,8 @@ There are a few configuration options that can be set using `SimpleGoogleAuth.co
 
 Option | Default | Description
 --- | --- | ---
-client_id | (required) | Client ID as provided by Google.
-client_secret | (required) | Client secret as provided by Google.
+client_id* | (required) | Client ID as provided by Google.
+client_secret* | (required) | Client secret as provided by Google.
 redirect_uri | (required) | Where Google should redirect to after authentication.
 redirect_path | `nil` | A route is created at this path.  If no path is specified, the path is taken from redirect_uri.
 authenticate | (required) | A lambda that's run to determine whether the user should be accepted as valid or not.  Takes one argument, a hash of identification data as provided by Google.  Should return true on success, or false if the login should not proceed.
@@ -119,9 +120,11 @@ state_session_key_name | `"simple-google-auth.state"` | The name of the session 
 data_session_key_name | `"simple-google-auth.data"` | The name of the session variable used to store identification data from Google.
 request_parameters | {scope: "openid email"} | Parameters to use when requesting a login from Google
 
+Items marked with * may be a lambda, which will be called when that config item is required.
+
 ## Licence
 
-MIT.
+MIT.  Copyright 2014-2015 Roger Nesbitt, Powershop New Zealand Limited.
 
 ## Authors and contributors
 
