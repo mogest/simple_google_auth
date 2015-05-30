@@ -2,7 +2,7 @@ module SimpleGoogleAuth
   class OAuth
     def initialize(config)
       @config = config
-      @client = HttpClient.new(@config.google_token_url, @config.ca_path)
+      @client = HttpClient.new(@config.google_token_url)
     end
 
     def exchange_code_for_auth_token!(code)
