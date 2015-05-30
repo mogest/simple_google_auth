@@ -4,7 +4,6 @@ describe SimpleGoogleAuth::HttpClient do
   describe "#request" do
     let(:http) { instance_double(Net::HTTP) }
     let(:request) { instance_double(Net::HTTP::Post) }
-    let(:response) { instance_double(Net::HTTPSuccess, :body => 'someresponse') }
 
     before do
       expect(Net::HTTP).to receive(:new).with("some.host", 443).and_return(http)
@@ -18,8 +17,64 @@ describe SimpleGoogleAuth::HttpClient do
 
     subject { SimpleGoogleAuth::HttpClient.new("https://some.host/somepath") }
 
-    it "makes a post request to the URL with the specified params and returns the body" do
-      expect(subject.request('some' => 'data')).to eq 'someresponse'
+    context "when the call is successful" do
+      let(:response) do
+        instance_double(
+          Net::HTTPSuccess,
+          code: '200',
+          body: {"data" => "very"}.to_json,
+          content_type: 'application/json'
+        )
+      end
+
+      it "returns the server's response" do
+        expect(subject.request('some' => 'data')).to eq("data" => "very")
+      end
+    end
+
+    context "when non-json data is returned" do
+      let(:response) do
+        instance_double(
+          Net::HTTPSuccess,
+          code: '200',
+          body: "some html",
+          content_type: 'text/html'
+        )
+      end
+
+      it "raises an error" do
+        expect { subject.request('some' => 'data') }.to raise_error(SimpleGoogleAuth::HttpClient::NonJsonResponseError, /non-JSON/)
+      end
+    end
+
+    context "when non-json-parseable data is returned" do
+      let(:response) do
+        instance_double(
+          Net::HTTPSuccess,
+          code: '200',
+          body: "some html",
+          content_type: 'application/json'
+        )
+      end
+
+      it "raises an error" do
+        expect { subject.request('some' => 'data') }.to raise_error(SimpleGoogleAuth::HttpClient::NonJsonResponseError, /parseable/)
+      end
+    end
+
+    context "when non-successful json data is returned" do
+      let(:response) do
+        instance_double(
+          Net::HTTPSuccess,
+          code: '400',
+          body: {"data" => "very"}.to_json,
+          content_type: 'application/json'
+        )
+      end
+
+      it "raises an error" do
+        expect { subject.request('some' => 'data') }.to raise_error(SimpleGoogleAuth::HttpClient::Error, /400.+very/)
+      end
     end
   end
 end

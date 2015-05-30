@@ -29,9 +29,7 @@ module SimpleGoogleAuth
     end
 
     private
-    def parse_auth_response(response)
-      auth_data = JSON.parse(response)
-
+    def parse_auth_response(auth_data)
       auth_data["expires_at"] = calculate_expiry(auth_data).to_s
 
       id_data = decode_id_data(auth_data.delete("id_token"))

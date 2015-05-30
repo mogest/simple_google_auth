@@ -1,5 +1,8 @@
 module SimpleGoogleAuth
   class HttpClient
+    Error = Class.new(StandardError)
+    NonJsonResponseError = Class.new(Error)
+
     def initialize(url)
       @uri = URI(url)
       @http = Net::HTTP.new(@uri.host, @uri.port)
@@ -14,7 +17,22 @@ module SimpleGoogleAuth
       request = Net::HTTP::Post.new(@uri.request_uri)
       request.set_form_data(params)
       response = @http.request(request)
-      response.body
+
+      if response.content_type != 'application/json'
+        raise NonJsonResponseError, "The server responded with non-JSON content"
+      end
+
+      data = begin
+        JSON.parse(response.body)
+      rescue JSON::ParserError
+        raise NonJsonResponseError, "The server responded with JSON content that was not parseable"
+      end
+
+      if response.code !~ /\A2\d\d\z/
+        raise Error, "The server responded with error #{response.code}: #{data.inspect}"
+      end
+
+      data
     end
   end
 end

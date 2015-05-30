@@ -34,7 +34,7 @@ describe SimpleGoogleAuth::OAuth do
         client_id: "12345",
         client_secret: "abcde",
         redirect_uri: "/ok"
-      ).and_return(response.to_json)
+      ).and_return(response)
     end
 
     it "returns a hash of auth token data" do
@@ -50,7 +50,7 @@ describe SimpleGoogleAuth::OAuth do
           grant_type: "refresh_token",
           client_id: "12345",
           client_secret: "abcde",
-        ).and_return(response.to_json)
+        ).and_return(response)
       end
 
       it "returns a hash of auth token data" do
