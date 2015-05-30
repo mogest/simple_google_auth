@@ -16,7 +16,7 @@ module SimpleGoogleAuth
   def self.uri(state)
     query = config.request_parameters.merge(
       response_type: "code",
-      client_id:     config.get_or_call(:client_id),
+      client_id:     config.client_id,
       redirect_uri:  config.redirect_uri,
       state:         state
     )

@@ -19,8 +19,17 @@ module SimpleGoogleAuth
       Rails.logger.warn "ca_path is no longer used by SimpleGoogleAuth as OpenSSL is clever enough to find its ca_path now"
     end
 
-    def get_or_call(attribute)
-      value = send(attribute)
+    def client_id
+      get_or_call super
+    end
+
+    def client_secret
+      get_or_call super
+    end
+
+    private
+
+    def get_or_call(value)
       value.respond_to?(:call) ? value.call : value
     end
   end
