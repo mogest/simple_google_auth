@@ -32,5 +32,5 @@ SimpleGoogleAuth.configure do |config|
   config.data_session_key_name = "simple-google-auth.data"
   config.failed_login_path = "/"
   config.request_parameters = {scope: "openid email"}
-  config.authenticate = lambda { raise "You must define an authenticate lambda that sets the session" }
+  config.authenticate = lambda {|data| raise "You must define an authenticate lambda that determines whether a user should be allowed access or not"}
 end
