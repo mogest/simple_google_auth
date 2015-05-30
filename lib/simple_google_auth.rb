@@ -12,21 +12,11 @@ module SimpleGoogleAuth
       config.request_parameters.merge!(access_type: "offline")
     end
   end
-
-  def self.uri(state)
-    query = config.request_parameters.merge(
-      response_type: "code",
-      client_id:     config.client_id,
-      redirect_uri:  config.redirect_uri,
-      state:         state
-    )
-
-    "#{config.google_auth_url}?" + query.map {|k, v| "#{k}=#{CGI.escape v}"}.join("&")
-  end
 end
 
 require 'simple_google_auth/http_client'
 require 'simple_google_auth/oauth'
+require 'simple_google_auth/authorization_uri_builder'
 require 'simple_google_auth/engine'
 require 'simple_google_auth/controller'
 require 'simple_google_auth/receiver'

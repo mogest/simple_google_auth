@@ -7,7 +7,7 @@ module SimpleGoogleAuth
 
     def google_authentication_uri
       state = session[SimpleGoogleAuth.config.state_session_key_name] = SecureRandom.hex + request.path
-      SimpleGoogleAuth.uri(state)
+      SimpleGoogleAuth::AuthorizationUriBuilder.new(state).uri
     end
 
     def google_auth_data
