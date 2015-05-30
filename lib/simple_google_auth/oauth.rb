@@ -1,5 +1,7 @@
 module SimpleGoogleAuth
   class OAuth
+    Error = Class.new(StandardError)
+
     def initialize(config)
       @config = config
       @client = HttpClient.new(@config.google_token_url)
@@ -30,10 +32,24 @@ module SimpleGoogleAuth
 
     private
     def parse_auth_response(auth_data)
+      validate_data_present!(auth_data)
+
       auth_data["expires_at"] = calculate_expiry(auth_data).to_s
 
       id_data = decode_id_data(auth_data.delete("id_token"))
       auth_data.merge!(id_data)
+    end
+
+    def validate_data_present!(auth_data)
+      %w(id_token expires_in).each do |field|
+        if auth_data[field].blank?
+          raise Error, "Expecting field '#{field}' to be set but it is blank"
+        end
+      end
+
+      if !auth_data['expires_in'].is_a?(Numeric) || auth_data['expires_in'] <= 0
+        raise Error, "Field 'expires_in' must be a number greater than 0"
+      end
     end
 
     def calculate_expiry(auth_data)
