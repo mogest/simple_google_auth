@@ -27,6 +27,14 @@ module SimpleGoogleAuth
       get_or_call super
     end
 
+    def authenticate=(value)
+      if !value.respond_to?(:call)
+        raise Error, "Your SimpleGoogleAuth authenticator must be an object that responds to :call, normally a lambda.  See documentation for configuration details."
+      end
+
+      super
+    end
+
     private
 
     def get_or_call(value)

@@ -15,6 +15,20 @@ describe SimpleGoogleAuth::Config do
     end
   end
 
+  describe "#authenticate=" do
+    it "saves the value if it is callable" do
+      fn = lambda {|data| true}
+      subject.authenticate = fn
+      expect(subject.authenticate).to eql fn
+    end
+
+    it "raises if the value isn't callable" do
+      expect {
+        subject.authenticate = "not a lambda"
+      }.to raise_error(SimpleGoogleAuth::Error, /responds to :call/)
+    end
+  end
+
   describe "#ca_path=" do
     it "logs a warning" do
       Rails.logger ||= double
