@@ -118,7 +118,7 @@ google_auth_url | `"https://accounts.google.com/o/oauth2/auth"` | Google's authe
 google_token_url | `"https://accounts.google.com/o/oauth2/token"` | Google's token URL.
 state_session_key_name | `"simple-google-auth.state"` | The name of the session variable used to store a random string used to prevent CSRF attacks during authentication.
 data_session_key_name | `"simple-google-auth.data"` | The name of the session variable used to store identification data from Google.
-request_parameters | {scope: "openid email"} | Parameters to use when requesting a login from Google
+request_parameters | `{scope: "openid email"}` | Parameters to use when requesting a login from Google
 
 Items marked with * may be a lambda, which will be called when that config item is required.
 
@@ -128,5 +128,5 @@ MIT.  Copyright 2014-2015 Roger Nesbitt, Powershop New Zealand Limited.
 
 ## Authors and contributors
 
- - Roger Nesbitt <roger@seriousorange.com>
+ - Roger Nesbitt
  - Andy Newport
