@@ -67,7 +67,7 @@ Call `#google_auth_data` from your controller or view and you'll get the authent
 
 SimpleGoogleAuth exposes the following data via methods: access_token, expires_in, token_type, refresh_token, id_token, iss, at_hash, email_verified, sub, azp, email, aud, iat, exp, hd.  You can also use `google_auth_data` as a hash and get any additional fields not listed here.
 
-Take a look at (the Google OAuth documentation)[https://developers.google.com/accounts/docs/OAuth2Login#obtainuserinfo]
+Take a look at [the Google OAuth documentation](https://developers.google.com/accounts/docs/OAuth2Login#obtainuserinfo)
 to see more information about what these fields mean.
 
 ## Refreshing tokens and offline mode
