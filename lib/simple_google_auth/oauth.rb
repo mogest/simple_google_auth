@@ -25,7 +25,9 @@ module SimpleGoogleAuth
         client_secret: @config.client_secret,
         grant_type: "refresh_token")
 
-      parse_auth_response(response).merge("refresh_token" => refresh_token)
+      response["refresh_token"] ||= refresh_token
+
+      parse_auth_response(response)
     end
 
     private
@@ -34,8 +36,7 @@ module SimpleGoogleAuth
 
       auth_data["expires_at"] = calculate_expiry(auth_data).to_s
 
-      id_data = decode_id_data(auth_data.delete("id_token"))
-      auth_data.merge!(id_data)
+      auth_data
     end
 
     def validate_data_present!(auth_data)
@@ -52,12 +53,6 @@ module SimpleGoogleAuth
 
     def calculate_expiry(auth_data)
       Time.now + auth_data["expires_in"] - 5.seconds
-    end
-
-    def decode_id_data(id_data)
-      id_data_64 = id_data.split(".")[1]
-      id_data_64 << "=" until id_data_64.length % 4 == 0
-      JSON.parse(Base64.decode64(id_data_64))
     end
   end
 end

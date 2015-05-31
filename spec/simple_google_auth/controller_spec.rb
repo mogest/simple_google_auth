@@ -12,6 +12,8 @@ describe SimpleGoogleAuth::Controller do
 
   subject { TestController.new }
 
+  let(:id_data) { Base64.encode64({email:"hi@hi"}.to_json).gsub('=', '') }
+  let(:auth_data) { {"id_token" => "123." + id_data} }
   let(:request) { double(path: "/somepath") }
   let(:session) { {} }
 
@@ -28,7 +30,7 @@ describe SimpleGoogleAuth::Controller do
     end
 
     it "does nothing if authenticated" do
-      session[SimpleGoogleAuth.config.data_session_key_name] = "yeah"
+      session[SimpleGoogleAuth.config.data_session_key_name] = auth_data
       expect(subject).to_not receive(:redirect_to)
       subject.send(:redirect_if_not_google_authenticated)
     end
@@ -36,8 +38,9 @@ describe SimpleGoogleAuth::Controller do
 
   describe "#google_auth_data" do
     it "returns data from the session" do
-      session[SimpleGoogleAuth.config.data_session_key_name] = "yeah"
-      expect(subject.send(:google_auth_data)).to eq 'yeah'
+      session[SimpleGoogleAuth.config.data_session_key_name] = auth_data
+      data = subject.send(:google_auth_data)
+      expect(data.email).to eq 'hi@hi'
     end
 
     it "refreshes the token data if it's expired and refresh_stale_tokens is true"

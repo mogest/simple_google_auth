@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe SimpleGoogleAuth::Receiver do
-  let(:authenticator) { double }
+  let(:authenticator) { double(call: true) }
   let(:authentication_result) { true }
   let(:session) { double }
   let(:state) { "abcd" * 8 + "/place" }
@@ -11,6 +11,7 @@ describe SimpleGoogleAuth::Receiver do
   let(:api) { instance_double(SimpleGoogleAuth::OAuth) }
   let(:auth_data) { double }
   let(:env) { double }
+  let(:auth_data_presenter) { instance_double(SimpleGoogleAuth::AuthDataPresenter) }
 
   before do
     expect(Rack::Request).to receive(:new).with(env).and_return(request)
@@ -26,7 +27,9 @@ describe SimpleGoogleAuth::Receiver do
     before do
       expect(SimpleGoogleAuth::OAuth).to receive(:new).with(SimpleGoogleAuth.config).and_return(api)
       expect(api).to receive(:exchange_code_for_auth_token!).with(code).and_return(auth_data)
-      expect(authenticator).to receive(:call).with(auth_data).and_return(authentication_result)
+
+      expect(SimpleGoogleAuth::AuthDataPresenter).to receive(:new).with(auth_data).and_return(auth_data_presenter)
+      expect(authenticator).to receive(:call).with(auth_data_presenter).and_return(authentication_result)
     end
 
     context "and the authenticator accepts the login" do

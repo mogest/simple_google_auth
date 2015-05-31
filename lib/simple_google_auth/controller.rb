@@ -1,6 +1,7 @@
 module SimpleGoogleAuth
   module Controller
     protected
+
     def redirect_if_not_google_authenticated
       redirect_to google_authentication_uri if google_auth_data.nil?
     end
@@ -11,26 +12,33 @@ module SimpleGoogleAuth
     end
 
     def google_auth_data
-      return unless google_auth_data_from_session
+      return unless cached_google_auth_data
 
       if should_refresh_google_auth_data?
         refresh_google_auth_data
       end
-      google_auth_data_from_session
+      cached_google_auth_data
     end
 
     private
 
     def refresh_google_auth_data
       api = SimpleGoogleAuth::OAuth.new(SimpleGoogleAuth.config)
-
-      auth_data = api.refresh_auth_token!(google_auth_data_from_session["refresh_token"])
+      auth_data = api.refresh_auth_token!(cached_google_auth_data["refresh_token"])
 
       session[SimpleGoogleAuth.config.data_session_key_name] = auth_data
+      @_google_auth_data_presenter = nil
+    end
+
+    def cached_google_auth_data
+      @_google_auth_data_presenter ||= google_auth_data_from_session
     end
 
     def google_auth_data_from_session
-      session[SimpleGoogleAuth.config.data_session_key_name]
+      if auth_data = session[SimpleGoogleAuth.config.data_session_key_name]
+        AuthDataPresenter.new(auth_data)
+      end
+    rescue AuthDataPresenter::InvalidAuthDataError
     end
 
     def should_refresh_google_auth_data?
@@ -38,7 +46,7 @@ module SimpleGoogleAuth
     end
 
     def google_auth_data_stale?
-      expiry_time = google_auth_data_from_session["expires_at"]
+      expiry_time = cached_google_auth_data["expires_at"]
 
       expiry_time.nil? || Time.parse(expiry_time).past?
     end

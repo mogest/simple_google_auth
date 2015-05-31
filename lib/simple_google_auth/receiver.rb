@@ -8,7 +8,8 @@ module SimpleGoogleAuth
       api = SimpleGoogleAuth::OAuth.new(config)
       auth_data = api.exchange_code_for_auth_token!(request.params["code"])
 
-      raise Error, "Authentication failed" unless config.authenticate.call(auth_data)
+      data = AuthDataPresenter.new(auth_data)
+      raise Error, "Authentication failed" unless config.authenticate.call(data)
 
       request.session[config.data_session_key_name] = auth_data
 

@@ -19,6 +19,7 @@ module SimpleGoogleAuth
 end
 
 require 'simple_google_auth/http_client'
+require 'simple_google_auth/auth_data_presenter'
 require 'simple_google_auth/oauth'
 require 'simple_google_auth/authorization_uri_builder'
 require 'simple_google_auth/engine'

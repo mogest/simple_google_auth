@@ -12,9 +12,7 @@ describe SimpleGoogleAuth::OAuth do
   end
 
   let(:client) { instance_double(SimpleGoogleAuth::HttpClient) }
-  let(:id_data) { {"some" => "data"} }
-  let(:id_token) { "12345." + Base64.encode64(id_data.to_json).gsub('=', '') }
-  let(:response) { {"id_token" => id_token, "expires_in" => 1200, "other" => "data"} }
+  let(:response) { {"id_token" => "sometoken", "expires_in" => 1200, "other" => "data"} }
   let(:expires_at) { Time.now + 1200 - 5 }
   
   before do
@@ -38,7 +36,7 @@ describe SimpleGoogleAuth::OAuth do
     end
 
     it "returns a hash of auth token data" do
-      expect(subject.exchange_code_for_auth_token!('magic')).to eq('expires_in' => 1200, 'other' => 'data', 'some' => 'data', 'expires_at' => expires_at.to_s)
+      expect(subject.exchange_code_for_auth_token!('magic')).to eq('expires_in' => 1200, 'other' => 'data', 'id_token' => 'sometoken', 'expires_at' => expires_at.to_s)
     end
   end
 
@@ -54,7 +52,7 @@ describe SimpleGoogleAuth::OAuth do
       end
 
       it "returns a hash of auth token data" do
-        expect(subject.refresh_auth_token!('magic')).to eq('expires_in' => 1200, 'other' => 'data', 'some' => 'data', 'expires_at' => expires_at.to_s, 'refresh_token' => 'magic')
+        expect(subject.refresh_auth_token!('magic')).to eq('expires_in' => 1200, 'other' => 'data', 'id_token' => 'sometoken', 'expires_at' => expires_at.to_s, 'refresh_token' => 'magic')
       end
     end
 

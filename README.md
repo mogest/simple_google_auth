@@ -13,36 +13,34 @@ such as OmniAuth's Google strategy.
 
 ## Installation
 
-Follow these five steps to integrate with your site.
+Follow these four steps to integrate with your site.
 
-Step 1: Make yourself a project at https://cloud.google.com/console, if you haven't already.
-
-Step 2: In that project, go to the "APIs & auth" tab, then the "Credentials" tab.  Create a new client ID of application type "Web application".  Set the Authorized Redirect URI to
+Step 1: Make yourself a project at https://cloud.google.com/console, if you haven't already.  In that project, go to the "APIs & auth" tab, then the "Credentials" tab.  Create a new client ID of application type "Web application".  Set the Authorized Redirect URI to
 `https://yoursite.com/google-callback`.  You might want to put in `http://localhost:3000/google-callback` so you can test locally too.
 
-Step 3: Add simple_google_auth to your Gemfile and run bundle
+Step 2: Add simple_google_auth to your `Gemfile` and run `bundle`
 
     gem 'simple_google_auth'
 
-Step 4: Add the following code to your application.rb and tweak it with your site's values
+Step 3: Add the following code to the bottom of your `config/application.rb` and tweak it with your site's values:
 
     SimpleGoogleAuth.configure do |config|
       config.client_id = "the client ID as supplied by Google in step 2"
       config.client_secret = "the client secret as supplied by Google in step 2"
       config.redirect_uri = "http://localhost:3000/google-callback"
       config.authenticate = lambda do |data|
-        data["email"] == "your.email@example.com"
+        data.email == "your.email@example.com" || data.email.ends_with?("@example.net")
       end
     end
 
-Step 5: In your application_controller.rb, add a before filter:
+Step 4: In your `application_controller.rb`, add a before action:
 
-    before_filter :redirect_if_not_google_authenticated
+    before_action :redirect_if_not_google_authenticated
 
-Done!  Any request to your site will now redirect off to Google for authentication.
-A route that captures requests coming in to `/google-callback` is automatically created and handled for you.
+Done!  Any request to your site will now redirect to Google for authentication.
+A route that captures requests to `/google-callback` on your site is automatically created and handled for you.
 
-If you log in with `your.email@example.com`, it'll let you in to the site and take you to the page you were initially trying to go to.
+If you log in with `your.email@example.com`, or any address in the `example.net` domain, it'll let you in to the site and take you to the page you were initially trying to go to.
 Otherwise it'll redirect to `/` (by default) with `params[:message]` set to the authentication error.
 
 ## Setting up a production environment
@@ -63,15 +61,18 @@ secrets, or authentication criteria.
 
 ## How do I tell who is logged in?
 
-Call `#google_auth_data` from your controller or view and you'll get the identification hash that Google sends back.
+Call `#google_auth_data` from your controller or view and you'll get the authentication data that Google sends back.
 
-    Welcome, <%= google_auth_data["email"] %>!
+    Welcome, <%= google_auth_data.email %>!
 
-Take a look at https://developers.google.com/accounts/docs/OAuth2Login#obtainuserinfo to find out more about the fields in the hash.
+SimpleGoogleAuth exposes the following data via methods: access_token, expires_in, token_type, refresh_token, id_token, iss, at_hash, email_verified, sub, azp, email, aud, iat, exp, hd.  You can also use `google_auth_data` as a hash and get any additional fields not listed here.
+
+Take a look at (the Google OAuth documentation)[https://developers.google.com/accounts/docs/OAuth2Login#obtainuserinfo]
+to see more information about what these fields mean.
 
 ## Refreshing tokens and offline mode
 
-By default simple_google_auth doesn't check the expiry time
+By default SimpleGoogleAuth doesn't check the expiry time
 on the credentials after they've been loaded from Google the first time.
 This is less hassle if all you want is simple authentication for your site,
 but prevents you from using the credentials for other uses (eg. GCal integration)
