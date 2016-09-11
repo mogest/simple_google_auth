@@ -7,6 +7,8 @@ describe SimpleGoogleAuth::HttpClient do
 
     before do
       expect(Net::HTTP).to receive(:new).with("some.host", 443).and_return(http)
+      expect(http).to receive(:open_timeout=).with(12)
+      expect(http).to receive(:read_timeout=).with(13)
       expect(http).to receive(:use_ssl=).with(true)
       expect(http).to receive(:verify_mode=).with(OpenSSL::SSL::VERIFY_PEER)
       expect(http).to receive(:request).with(request).and_return(response)
@@ -15,7 +17,7 @@ describe SimpleGoogleAuth::HttpClient do
       expect(request).to receive(:set_form_data).with('some' => 'data')
     end
 
-    subject { SimpleGoogleAuth::HttpClient.new("https://some.host/somepath") }
+    subject { SimpleGoogleAuth::HttpClient.new("https://some.host/somepath", open_timeout: 12, read_timeout: 13) }
 
     context "when the call is successful" do
       let(:response) do

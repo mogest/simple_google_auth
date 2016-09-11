@@ -7,7 +7,7 @@ You can allow any user with a Google account, or limit access to certain users b
 Google e-mail address.
 
 Being simple, it's limited in what it can do.  But if your goal is to put your site
-behind a Google login instead of a crusty basic auth box, it'll do the trick. 
+behind a Google login instead of a crusty basic auth box, it'll do the trick.
 If you're after more power, there are quite a few gems that'll do what you're looking for,
 such as OmniAuth's Google strategy.
 
@@ -100,7 +100,7 @@ send you the refresh token every time your users authenticate.
       config.request_parameters.merge!(approval_prompt: "force")
     end
 
-For more details on offline mode and approval_prompt refer to the 
+For more details on offline mode and approval_prompt refer to the
 [Google OAuth documentation](https://developers.google.com/accounts/docs/OAuth2WebServer).
 
 ## Configuring
@@ -120,12 +120,14 @@ google_token_url | `"https://accounts.google.com/o/oauth2/token"` | Google's tok
 state_session_key_name | `"simple-google-auth.state"` | The name of the session variable used to store a random string used to prevent CSRF attacks during authentication.
 data_session_key_name | `"simple-google-auth.data"` | The name of the session variable used to store identification data from Google.
 request_parameters | `{scope: "openid email"}` | Parameters to use when requesting a login from Google
+open_timeout | `15` | The maximum time, in seconds, to wait connecting to Google before giving up
+read_timeout | `15` | The maximum time, in seconds, to wait for a response from Google before giving up
 
 Items marked with * may be a lambda, which will be called when that config item is required.
 
 ## Licence
 
-MIT.  Copyright 2014-2015 Roger Nesbitt, Powershop New Zealand Limited.
+MIT.  Copyright 2014-2016 Roger Nesbitt, Powershop New Zealand Limited.
 
 ## Authors and contributors
 

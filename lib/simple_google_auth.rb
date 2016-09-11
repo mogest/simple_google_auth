@@ -34,4 +34,6 @@ SimpleGoogleAuth.configure do |config|
   config.failed_login_path = "/"
   config.request_parameters = {scope: "openid email"}
   config.authenticate = lambda {|data| raise "You must define an authenticate lambda that determines whether a user should be allowed access or not"}
+  config.open_timeout = SimpleGoogleAuth::HttpClient::DEFAULT_OPEN_TIMEOUT
+  config.read_timeout = SimpleGoogleAuth::HttpClient::DEFAULT_READ_TIMEOUT
 end

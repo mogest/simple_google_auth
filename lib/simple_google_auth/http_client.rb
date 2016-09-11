@@ -1,8 +1,13 @@
 module SimpleGoogleAuth
   class HttpClient
-    def initialize(url)
+    DEFAULT_OPEN_TIMEOUT = 15
+    DEFAULT_READ_TIMEOUT = 15
+
+    def initialize(url, open_timeout: DEFAULT_OPEN_TIMEOUT, read_timeout: DEFAULT_READ_TIMEOUT)
       @uri = URI(url)
       @http = Net::HTTP.new(@uri.host, @uri.port)
+      @http.open_timeout = open_timeout
+      @http.read_timeout = read_timeout
 
       if @uri.scheme == "https"
         @http.use_ssl = true
@@ -13,7 +18,12 @@ module SimpleGoogleAuth
     def request(params)
       request = Net::HTTP::Post.new(@uri.request_uri)
       request.set_form_data(params)
-      response = @http.request(request)
+
+      response = begin
+        @http.request(request)
+      rescue Net::OpenTimeout, Net::ReadTimeout => e
+        raise ProviderError, "A #{e.class.name} occurred while communicating with the server"
+      end
 
       if response.content_type != 'application/json'
         raise NonJsonResponseError, "The server responded with non-JSON content"

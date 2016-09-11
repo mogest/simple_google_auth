@@ -38,7 +38,7 @@ describe SimpleGoogleAuth::Receiver do
       end
 
       it "redirects to the URL specified in the session" do
-        expect(subject).to eq [302, {"Location" => "/place"}, [" "]] 
+        expect(subject).to eq [302, {"Location" => "/place"}, [" "]]
       end
     end
 
@@ -46,7 +46,7 @@ describe SimpleGoogleAuth::Receiver do
       let(:authentication_result) { false }
 
       it "redirects to the failed login path with a message" do
-        expect(subject).to eq [302, {"Location" => "/error?message=Authentication+failed"}, [" "]] 
+        expect(subject).to eq [302, {"Location" => "/error?message=Authentication+failed"}, [" "]]
       end
     end
   end
@@ -55,7 +55,7 @@ describe SimpleGoogleAuth::Receiver do
     let(:params) { {"state" => "doesnotmatch", "code" => code} }
 
     it "redirects to the failed login path with a message" do
-      expect(subject).to eq [302, {"Location" => "/error?message=Invalid+state+returned+from+Google"}, [" "]] 
+      expect(subject).to eq [302, {"Location" => "/error?message=Invalid+state+returned+from+Google"}, [" "]]
     end
   end
 
@@ -63,7 +63,7 @@ describe SimpleGoogleAuth::Receiver do
     let(:params) { {"state" => state, "error" => "bad stuff"} }
 
     it "redirects to the failed login path with a message" do
-      expect(subject).to eq [302, {"Location" => "/error?message=Authentication+failed%3A+bad+stuff"}, [" "]] 
+      expect(subject).to eq [302, {"Location" => "/error?message=Authentication+failed%3A+bad+stuff"}, [" "]]
     end
   end
 
@@ -71,7 +71,7 @@ describe SimpleGoogleAuth::Receiver do
     let(:params) { {"state" => state} }
 
     it "redirects to the failed login path with a message" do
-      expect(subject).to eq [302, {"Location" => "/error?message=No+authentication+code+returned"}, [" "]] 
+      expect(subject).to eq [302, {"Location" => "/error?message=No+authentication+code+returned"}, [" "]]
     end
   end
 end

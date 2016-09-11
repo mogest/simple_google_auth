@@ -11,7 +11,9 @@ module SimpleGoogleAuth
     :state_session_key_name,
     :data_session_key_name,
     :request_parameters,
-    :refresh_stale_tokens
+    :refresh_stale_tokens,
+    :open_timeout,
+    :read_timeout,
   ]
 
   class Config < Struct.new(*config_fields)

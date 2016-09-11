@@ -7,19 +7,21 @@ describe SimpleGoogleAuth::OAuth do
       google_token_url: "/token/url",
       client_id: '12345',
       client_secret: 'abcde',
-      redirect_uri: '/ok'
+      redirect_uri: '/ok',
+      open_timeout: 12,
+      read_timeout: 13
     )
   end
 
   let(:client) { instance_double(SimpleGoogleAuth::HttpClient) }
   let(:response) { {"id_token" => "sometoken", "expires_in" => 1200, "other" => "data"} }
   let(:expires_at) { Time.now + 1200 - 5 }
-  
+
   before do
     now = Time.now
     allow(Time).to receive(:now).and_return(now)
 
-    expect(SimpleGoogleAuth::HttpClient).to receive(:new).with(config.google_token_url).and_return(client)
+    expect(SimpleGoogleAuth::HttpClient).to receive(:new).with(config.google_token_url, open_timeout: 12, read_timeout: 13).and_return(client)
   end
 
   subject { SimpleGoogleAuth::OAuth.new(config) }
