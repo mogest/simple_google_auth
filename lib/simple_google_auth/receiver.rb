@@ -13,7 +13,7 @@ module SimpleGoogleAuth
 
       request.session[config.data_session_key_name] = auth_data
 
-      path = request.session[config.state_session_key_name][32..-1]
+      path = config.authentication_uri_state_path_extractor.call(request.session[config.state_session_key_name])
       path = "/" if path.blank?
       [302, {"Location" => path}, [" "]]
 

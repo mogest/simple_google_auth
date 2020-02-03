@@ -36,4 +36,20 @@ describe SimpleGoogleAuth::Config do
       subject.ca_path = "/etc/certs"
     end
   end
+
+  describe "#authentication_uri_state_builder=" do
+    it "raises if the value isn't callable" do
+      expect {
+        subject.authentication_uri_state_builder = "not a lambda"
+      }.to raise_error(SimpleGoogleAuth::Error, /responds to :call/)
+    end
+  end
+
+  describe "#authentication_uri_state_path_extractor=" do
+    it "raises if the value isn't callable" do
+      expect {
+        subject.authentication_uri_state_path_extractor = "not a lambda"
+      }.to raise_error(SimpleGoogleAuth::Error, /responds to :call/)
+    end
+  end
 end
