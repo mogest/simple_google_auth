@@ -1,8 +1,10 @@
 module SimpleGoogleAuth
   class Engine < ::Rails::Engine
     initializer "simple_google_auth.load_helpers" do
-      ActionController::Base.send :include, SimpleGoogleAuth::Controller
-      ActionController::Base.send :helper_method, :google_auth_data
+      ActiveSupport.on_load(:action_controller) do
+        include SimpleGoogleAuth::Controller
+        helper_method :google_auth_data
+      end
     end
   end
 end
