@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    simple_google_auth (0.2.0)
+    simple_google_auth (0.2.1)
       rails (>= 3.2.0)
 
 GEM
@@ -50,7 +50,7 @@ GEM
     globalid (0.3.7)
       activesupport (>= 4.1.0)
     i18n (0.7.0)
-    json (1.8.2)
+    json (1.8.6)
     loofah (2.0.2)
       nokogiri (>= 1.5.9)
     mail (2.6.4)
