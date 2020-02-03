@@ -14,6 +14,8 @@ module SimpleGoogleAuth
     :refresh_stale_tokens,
     :open_timeout,
     :read_timeout,
+    :authentication_uri_state_builder,
+    :authentication_uri_state_path_extractor,
   ]
 
   class Config < Struct.new(*config_fields)
@@ -30,9 +32,19 @@ module SimpleGoogleAuth
     end
 
     def authenticate=(value)
-      if !value.respond_to?(:call)
-        raise Error, "Your SimpleGoogleAuth authenticator must be an object that responds to :call, normally a lambda.  See documentation for configuration details."
-      end
+      raise Error, "Your SimpleGoogleAuth authenticator must be an object that responds to :call, normally a lambda.  See documentation for configuration details." unless value.respond_to?(:call)
+
+      super
+    end
+
+    def authentication_uri_state_builder=(value)
+      raise Error, "Your SimpleGoogleAuth authentication_uri_state_builder must be an object that responds to :call, normally a lambda.  See documentation for configuration details." unless value.respond_to?(:call)
+
+      super
+    end
+
+    def authentication_uri_state_path_extractor=(value)
+      raise Error, "Your SimpleGoogleAuth authentication_uri_state_path_extractor must be an object that responds to :call, normally a lambda.  See documentation for configuration details." unless value.respond_to?(:call)
 
       super
     end
