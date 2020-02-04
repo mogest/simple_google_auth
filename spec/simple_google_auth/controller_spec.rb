@@ -24,8 +24,9 @@ describe SimpleGoogleAuth::Controller do
 
   describe "#redirect_if_not_google_authenticated" do
     it "redirects if not authenticated" do
-      expect(SecureRandom).to receive(:hex).and_return("abcd")
-      expect(subject).to receive(:redirect_to).with("https://accounts.google.com/o/oauth2/auth?scope=openid+email&response_type=code&client_id=123&redirect_uri=%2Fabc&state=abcd%2Fsomepath")
+      SimpleGoogleAuth.config.authentication_uri_state_builder = ->(request) { 'prefix-/somepath' }
+
+      expect(subject).to receive(:redirect_to).with("https://accounts.google.com/o/oauth2/auth?scope=openid+email&response_type=code&client_id=123&redirect_uri=%2Fabc&state=prefix-%2Fsomepath")
       subject.send(:redirect_if_not_google_authenticated)
     end
 

@@ -122,14 +122,20 @@ data_session_key_name | `"simple-google-auth.data"` | The name of the session va
 request_parameters | `{scope: "openid email"}` | Parameters to use when requesting a login from Google
 open_timeout | `15` | The maximum time, in seconds, to wait connecting to Google before giving up
 read_timeout | `15` | The maximum time, in seconds, to wait for a response from Google before giving up
+authentication_uri_state_builder | ->(request) { SecureRandom.hex + request.path } | The lambda used to create the state param for the oauth uri.
+authentication_uri_state_path_extractor | ->(state) { state[32..-1] } | The lambda used to extract the request path from the state param.
 
 Items marked with * may be a lambda, which will be called when that config item is required.
+
+Note that when customising the oauth uri state param, you will need to configure both authentication_uri_state_builder and authentication_uri_state_path_extractor. The builder must include the request path when creating the state param, otherwise simple_google_auth will always redirect back to '/'. This feature can be used to encode other information into the state parameter.
 
 ## Licence
 
 MIT.  Copyright 2014-2016 Roger Nesbitt, Powershop New Zealand Limited.
+MIT.  Copyright 2020 Flux Federation Ltd
 
 ## Authors and contributors
 
  - Roger Nesbitt
  - Andy Newport
+ - Flux Federation

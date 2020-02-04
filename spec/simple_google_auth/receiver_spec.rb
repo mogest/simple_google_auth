@@ -12,6 +12,7 @@ describe SimpleGoogleAuth::Receiver do
   let(:auth_data) { double }
   let(:env) { double }
   let(:auth_data_presenter) { instance_double(SimpleGoogleAuth::AuthDataPresenter) }
+  let(:authentication_uri_state_path_extractor) { double(:call => '') }
 
   before do
     expect(Rack::Request).to receive(:new).with(env).and_return(request)
@@ -19,6 +20,7 @@ describe SimpleGoogleAuth::Receiver do
 
     SimpleGoogleAuth.config.authenticate = authenticator
     SimpleGoogleAuth.config.failed_login_path = '/error'
+    SimpleGoogleAuth.config.authentication_uri_state_path_extractor = authentication_uri_state_path_extractor
   end
 
   subject { SimpleGoogleAuth::Receiver.new.call(env) }
@@ -38,6 +40,8 @@ describe SimpleGoogleAuth::Receiver do
       end
 
       it "redirects to the URL specified in the session" do
+        expect(authentication_uri_state_path_extractor).to receive(:call).with(state).and_return('/place')
+
         expect(subject).to eq [302, {"Location" => "/place"}, [" "]]
       end
     end
