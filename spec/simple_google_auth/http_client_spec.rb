@@ -14,7 +14,7 @@ describe SimpleGoogleAuth::HttpClient do
       expect(http).to receive(:request).with(request).and_return(response)
 
       expect(Net::HTTP::Post).to receive(:new).with("/somepath").and_return(request)
-      expect(request).to receive(:set_form_data).with('some' => 'data')
+      expect(request).to receive(:set_form_data).with({'some' => 'data'})
     end
 
     subject { SimpleGoogleAuth::HttpClient.new("https://some.host/somepath", open_timeout: 12, read_timeout: 13) }
