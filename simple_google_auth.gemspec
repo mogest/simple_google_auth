@@ -1,7 +1,4 @@
-$:.push File.expand_path("../lib", __FILE__)
-
-# Maintain your gem's version:
-require "simple_google_auth/version"
+require_relative "lib/simple_google_auth/version"
 
 # Describe your gem and declare its dependencies:
 Gem::Specification.new do |s|
@@ -15,11 +12,10 @@ Gem::Specification.new do |s|
   s.license     = "MIT"
 
   s.files = Dir["{config,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
-  s.test_files = Dir["spec/**/*"]
 
-  s.required_ruby_version = '>= 2.0.0'
+  s.required_ruby_version = '>= 3.0'
 
-  s.add_dependency "rails", ENV['RAILS_VERSION'] || ">= 5.2"
+  s.add_dependency "rails", ">= 5.2"
   s.add_development_dependency 'rspec-rails', '~> 6.1'
   s.add_development_dependency 'simplecov', '~> 0.22'
 end
