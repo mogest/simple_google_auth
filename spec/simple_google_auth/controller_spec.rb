@@ -138,6 +138,21 @@ RSpec.describe SimpleGoogleAuth::Controller do
         end
       end
 
+      context "and the refresh is refused by the provider (e.g. revoked token)" do
+        let(:auth_data) do
+          {"id_token" => id_token, "refresh_token" => "refresh-me", "expires_at" => (Time.now - 60).to_s}
+        end
+
+        it "clears the session data and returns nil so the user re-authenticates" do
+          session[data_key] = auth_data
+          expect(SimpleGoogleAuth::OAuth).to receive(:new).and_return(api)
+          expect(api).to receive(:refresh_auth_token!).and_raise(SimpleGoogleAuth::ProviderError, "The server responded with error 400")
+
+          expect(controller.send(:google_auth_data)).to be_nil
+          expect(session[data_key]).to be_nil
+        end
+      end
+
       context "and the token has expired but there is no refresh token" do
         let(:auth_data) { {"id_token" => id_token, "expires_at" => (Time.now - 60).to_s} }
 

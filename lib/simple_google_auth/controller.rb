@@ -22,9 +22,17 @@ module SimpleGoogleAuth
 
     private
 
+    # If the refresh is refused (e.g. the refresh token has been revoked), clear
+    # the session data so the user is sent back through the login flow instead
+    # of the error propagating as a 500.
     def refresh_google_auth_data
       api = SimpleGoogleAuth::OAuth.new(SimpleGoogleAuth.config)
-      auth_data = api.refresh_auth_token!(cached_google_auth_data["refresh_token"])
+
+      auth_data = begin
+        api.refresh_auth_token!(cached_google_auth_data["refresh_token"])
+      rescue ProviderError
+        nil
+      end
 
       session[SimpleGoogleAuth.config.data_session_key_name] = auth_data
       @_google_auth_data_presenter = nil
