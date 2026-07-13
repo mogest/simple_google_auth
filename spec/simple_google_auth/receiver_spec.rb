@@ -1,69 +1,112 @@
 require 'spec_helper'
 
-describe SimpleGoogleAuth::Receiver do
-  let(:authenticator) { double(call: true) }
-  let(:authentication_result) { true }
-  let(:session) { double }
+RSpec.describe SimpleGoogleAuth::Receiver do
+  class ReceiverFakeSession < Hash
+    attr_reader :options
+
+    def initialize
+      super
+      @options = {}
+    end
+  end
+
   let(:state) { "abcd" * 8 + "/place" }
   let(:code) { "sekrit" }
   let(:params) { {"state" => state, "code" => code} }
-  let(:request) { instance_double(Rack::Request, session: session, params: params) }
-  let(:api) { instance_double(SimpleGoogleAuth::OAuth) }
-  let(:auth_data) { double }
-  let(:env) { double }
-  let(:auth_data_presenter) { instance_double(SimpleGoogleAuth::AuthDataPresenter) }
-  let(:authentication_uri_state_path_extractor) { double(:call => '') }
+  let(:session) do
+    ReceiverFakeSession.new.tap { |s| s[SimpleGoogleAuth.config.state_session_key_name] = state }
+  end
+  let(:id_token) { "header." + Base64.strict_encode64({"email" => "user@example.com"}.to_json).delete("=") }
+  let(:auth_data) { {"id_token" => id_token, "expires_in" => 1200} }
+  let(:api) { instance_double(SimpleGoogleAuth::OAuth, exchange_code_for_auth_token!: auth_data) }
+  let(:authenticated_emails) { [] }
 
   before do
-    expect(Rack::Request).to receive(:new).with(env).and_return(request)
-    expect(session).to receive(:[]).at_least(:once).with('simple-google-auth.state').and_return(state)
-
-    SimpleGoogleAuth.config.authenticate = authenticator
-    SimpleGoogleAuth.config.failed_login_path = '/error'
-    SimpleGoogleAuth.config.authentication_uri_state_path_extractor = authentication_uri_state_path_extractor
+    allow(SimpleGoogleAuth::OAuth).to receive(:new).with(SimpleGoogleAuth.config).and_return(api)
+    SimpleGoogleAuth.config.failed_login_path = "/error"
+    SimpleGoogleAuth.config.authenticate = lambda { |data| authenticated_emails << data.email; true }
   end
 
-  subject { SimpleGoogleAuth::Receiver.new.call(env) }
+  def env_for(params)
+    Rack::MockRequest.env_for("/auth?" + Rack::Utils.build_query(params)).tap do |env|
+      env["rack.session"] = session
+    end
+  end
 
-  context "when a valid code is provided to the receiver" do
-    before do
-      expect(SimpleGoogleAuth::OAuth).to receive(:new).with(SimpleGoogleAuth.config).and_return(api)
-      expect(api).to receive(:exchange_code_for_auth_token!).with(code).and_return(auth_data)
+  subject(:response) { described_class.new.call(env_for(params)) }
 
-      expect(SimpleGoogleAuth::AuthDataPresenter).to receive(:new).with(auth_data).and_return(auth_data_presenter)
-      expect(authenticator).to receive(:call).with(auth_data_presenter).and_return(authentication_result)
+  context "when a valid code and state are provided" do
+    it "exchanges the code, authenticates and redirects to the path embedded in the state" do
+      expect(response).to eq [302, {"Location" => "/place"}, [" "]]
+      expect(api).to have_received(:exchange_code_for_auth_token!).with(code)
+      expect(authenticated_emails).to eq ["user@example.com"]
     end
 
-    context "and the authenticator accepts the login" do
+    it "stores the auth data in the session" do
+      response
+      expect(session[SimpleGoogleAuth.config.data_session_key_name]).to eq auth_data
+    end
+
+    it "marks the session for renewal to defend against session fixation" do
+      response
+      expect(session.options[:renew]).to be true
+    end
+
+    context "with a session store that does not support options" do
+      let(:session) { {SimpleGoogleAuth.config.state_session_key_name => state} }
+
+      it "still logs in successfully" do
+        expect(response).to eq [302, {"Location" => "/place"}, [" "]]
+      end
+    end
+
+    context "when the state embeds a protocol-relative path (open redirect)" do
+      let(:state) { "a" * 32 + "//evil.com" }
+
+      it "redirects to / instead" do
+        expect(response).to eq [302, {"Location" => "/"}, [" "]]
+      end
+    end
+
+    context "when the state embeds a backslash-prefixed path (open redirect)" do
+      let(:state) { "a" * 32 + "/\\evil.com" }
+
+      it "redirects to / instead" do
+        expect(response).to eq [302, {"Location" => "/"}, [" "]]
+      end
+    end
+
+    context "when the state embeds a path that does not start with a slash" do
+      let(:state) { "a" * 32 + "place" }
+
+      it "redirects to / instead" do
+        expect(response).to eq [302, {"Location" => "/"}, [" "]]
+      end
+    end
+
+    context "when the path extractor returns nil" do
       before do
-        expect(session).to receive(:[]=).with('simple-google-auth.data', auth_data)
+        SimpleGoogleAuth.config.authentication_uri_state_path_extractor = lambda { |state| nil }
       end
 
-      it "redirects to the URL specified in the session" do
-        expect(authentication_uri_state_path_extractor).to receive(:call).with(state).and_return('/place')
-
-        expect(subject).to eq [302, {"Location" => "/place"}, [" "]]
-      end
-
-      it "does not follow a protocol-relative redirect path (open redirect)" do
-        expect(authentication_uri_state_path_extractor).to receive(:call).with(state).and_return('//evil.com')
-
-        expect(subject).to eq [302, {"Location" => "/"}, [" "]]
-      end
-
-      it "does not follow a backslash-prefixed redirect path (open redirect)" do
-        expect(authentication_uri_state_path_extractor).to receive(:call).with(state).and_return('/\\evil.com')
-
-        expect(subject).to eq [302, {"Location" => "/"}, [" "]]
+      it "redirects to / instead" do
+        expect(response).to eq [302, {"Location" => "/"}, [" "]]
       end
     end
+  end
 
-    context "and the authenticator rejects the login" do
-      let(:authentication_result) { false }
+  context "when the authenticator rejects the login" do
+    before do
+      SimpleGoogleAuth.config.authenticate = lambda { |data| false }
+    end
 
-      it "redirects to the failed login path with a message" do
-        expect(subject).to eq [302, {"Location" => "/error?message=Authentication+failed"}, [" "]]
-      end
+    it "redirects to the failed login path with a message" do
+      expect(response).to eq [302, {"Location" => "/error?message=Authentication+failed"}, [" "]]
+    end
+
+    it "does not store the auth data in the session" do
+      response
+      expect(session[SimpleGoogleAuth.config.data_session_key_name]).to be_nil
     end
   end
 
@@ -71,16 +114,16 @@ describe SimpleGoogleAuth::Receiver do
     let(:params) { {"state" => "doesnotmatch", "code" => code} }
 
     it "redirects to the failed login path with a message" do
-      expect(subject).to eq [302, {"Location" => "/error?message=Invalid+state+returned+from+Google"}, [" "]]
+      expect(response).to eq [302, {"Location" => "/error?message=Invalid+state+returned+from+Google"}, [" "]]
     end
   end
 
   context "when the session holds no state and the callback omits it (forged callback)" do
-    let(:state) { nil }
+    let(:session) { ReceiverFakeSession.new }
     let(:params) { {"code" => code} }
 
     it "rejects the login rather than treating two blank states as a match" do
-      expect(subject).to eq [302, {"Location" => "/error?message=Invalid+state+returned+from+Google"}, [" "]]
+      expect(response).to eq [302, {"Location" => "/error?message=Invalid+state+returned+from+Google"}, [" "]]
     end
   end
 
@@ -88,7 +131,7 @@ describe SimpleGoogleAuth::Receiver do
     let(:params) { {"state" => state, "error" => "bad stuff"} }
 
     it "redirects to the failed login path with a message" do
-      expect(subject).to eq [302, {"Location" => "/error?message=Authentication+failed%3A+bad+stuff"}, [" "]]
+      expect(response).to eq [302, {"Location" => "/error?message=Authentication+failed%3A+bad+stuff"}, [" "]]
     end
   end
 
@@ -96,7 +139,38 @@ describe SimpleGoogleAuth::Receiver do
     let(:params) { {"state" => state} }
 
     it "redirects to the failed login path with a message" do
-      expect(subject).to eq [302, {"Location" => "/error?message=No+authentication+code+returned"}, [" "]]
+      expect(response).to eq [302, {"Location" => "/error?message=No+authentication+code+returned"}, [" "]]
+    end
+  end
+
+  context "when the failed login path already has a query string" do
+    let(:params) { {"state" => "doesnotmatch", "code" => code} }
+
+    before do
+      SimpleGoogleAuth.config.failed_login_path = "/error?source=google"
+    end
+
+    it "appends the message to the existing query string" do
+      expect(response).to eq [302, {"Location" => "/error?source=google&message=Invalid+state+returned+from+Google"}, [" "]]
+    end
+  end
+
+  context "when the token exchange fails with a provider error" do
+    before do
+      allow(api).to receive(:exchange_code_for_auth_token!).and_raise(SimpleGoogleAuth::ProviderError, "The server responded with error 500")
+    end
+
+    it "redirects to the failed login path with the error message" do
+      expect(response).to eq [302, {"Location" => "/error?message=The+server+responded+with+error+500"}, [" "]]
+    end
+  end
+
+  context "when the token exchange returns data without an id_token" do
+    let(:auth_data) { {"expires_in" => 1200} }
+
+    it "redirects to the failed login path rather than crashing" do
+      expect(response[0]).to eq 302
+      expect(response[1]["Location"]).to start_with "/error?message="
     end
   end
 end

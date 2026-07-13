@@ -21,4 +21,5 @@ Gem::Specification.new do |s|
 
   s.add_dependency "rails", ENV['RAILS_VERSION'] || ">= 5.2"
   s.add_development_dependency 'rspec-rails', '~> 6.1'
+  s.add_development_dependency 'simplecov', '~> 0.22'
 end

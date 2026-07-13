@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe SimpleGoogleAuth::Config do
+RSpec.describe SimpleGoogleAuth::Config do
   subject { SimpleGoogleAuth::Config.new }
 
   describe "#client_id" do
@@ -12,6 +12,18 @@ describe SimpleGoogleAuth::Config do
     it "calls to get the value if it responds to call" do
       subject.client_id = lambda { '12345' }
       expect(subject.client_id).to eq '12345'
+    end
+  end
+
+  describe "#client_secret" do
+    it "gets the value if it doesn't respond to call" do
+      subject.client_secret = 'abcde'
+      expect(subject.client_secret).to eq 'abcde'
+    end
+
+    it "calls to get the value if it responds to call" do
+      subject.client_secret = lambda { 'abcde' }
+      expect(subject.client_secret).to eq 'abcde'
     end
   end
 
@@ -38,6 +50,12 @@ describe SimpleGoogleAuth::Config do
   end
 
   describe "#authentication_uri_state_builder=" do
+    it "saves the value if it is callable" do
+      fn = lambda {|request| 'state'}
+      subject.authentication_uri_state_builder = fn
+      expect(subject.authentication_uri_state_builder).to eql fn
+    end
+
     it "raises if the value isn't callable" do
       expect {
         subject.authentication_uri_state_builder = "not a lambda"
@@ -46,6 +64,12 @@ describe SimpleGoogleAuth::Config do
   end
 
   describe "#authentication_uri_state_path_extractor=" do
+    it "saves the value if it is callable" do
+      fn = lambda {|state| '/path'}
+      subject.authentication_uri_state_path_extractor = fn
+      expect(subject.authentication_uri_state_path_extractor).to eql fn
+    end
+
     it "raises if the value isn't callable" do
       expect {
         subject.authentication_uri_state_path_extractor = "not a lambda"
