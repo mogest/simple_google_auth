@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    simple_google_auth (0.3.2)
+    simple_google_auth (1.0.0)
       rails (>= 5.2)
 
 GEM
