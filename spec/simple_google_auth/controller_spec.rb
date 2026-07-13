@@ -80,6 +80,11 @@ RSpec.describe SimpleGoogleAuth::Controller do
       expect(controller.send(:google_auth_data)).to be_nil
     end
 
+    it "returns nil when the session holds a malformed id_token" do
+      session[data_key] = {"id_token" => "notajwt"}
+      expect(controller.send(:google_auth_data)).to be_nil
+    end
+
     it "memoizes the presenter" do
       session[data_key] = auth_data
       first = controller.send(:google_auth_data)

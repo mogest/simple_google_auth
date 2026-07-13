@@ -43,8 +43,12 @@ module SimpleGoogleAuth
       # from Google over HTTPS (see
       # https://developers.google.com/identity/protocols/OpenIDConnect#obtainuserinfo)
       signature, id_data_64 = id_token.split(".")
+      raise InvalidAuthDataError if id_data_64.nil?
+
       id_data_64 << "=" until id_data_64.length % 4 == 0
       JSON.parse(Base64.decode64(id_data_64))
+    rescue JSON::ParserError
+      raise InvalidAuthDataError
     end
   end
 end

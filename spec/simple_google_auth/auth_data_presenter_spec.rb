@@ -59,4 +59,16 @@ RSpec.describe SimpleGoogleAuth::AuthDataPresenter do
       SimpleGoogleAuth::AuthDataPresenter.new({})
     }.to raise_error(SimpleGoogleAuth::AuthDataPresenter::InvalidAuthDataError)
   end
+
+  it "raises if the id_token has no payload segment" do
+    expect {
+      SimpleGoogleAuth::AuthDataPresenter.new("id_token" => "notajwt")
+    }.to raise_error(SimpleGoogleAuth::AuthDataPresenter::InvalidAuthDataError)
+  end
+
+  it "raises if the id_token payload is not valid JSON" do
+    expect {
+      SimpleGoogleAuth::AuthDataPresenter.new("id_token" => "12345." + Base64.strict_encode64("not json").delete("="))
+    }.to raise_error(SimpleGoogleAuth::AuthDataPresenter::InvalidAuthDataError)
+  end
 end
