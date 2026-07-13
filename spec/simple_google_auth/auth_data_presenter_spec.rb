@@ -12,7 +12,7 @@ RSpec.describe SimpleGoogleAuth::AuthDataPresenter do
     }
   end
 
-  let(:id_token) { "12345." + Base64.encode64(id_data.to_json).gsub('=', '') }
+  let(:id_token) { "12345." + Base64.urlsafe_encode64(id_data.to_json, padding: false) }
   let(:auth_data) do
     {
       "id_token" => id_token,
@@ -46,12 +46,21 @@ RSpec.describe SimpleGoogleAuth::AuthDataPresenter do
     expect(presenter.email).to eq 'test@test.example'
   end
 
-  it "decodes JWT payloads of any length, re-adding base64 padding" do
+  it "decodes unpadded JWT payloads of any length" do
     %w(a ab abc abcd abcde).each do |email|
-      token = "12345." + Base64.strict_encode64({"email" => email}.to_json).delete("=")
+      token = "12345." + Base64.urlsafe_encode64({"email" => email}.to_json, padding: false)
       presenter = SimpleGoogleAuth::AuthDataPresenter.new("id_token" => token)
       expect(presenter.email).to eq email
     end
+  end
+
+  it "decodes payloads containing base64url-specific characters" do
+    payload = {"name" => "a>b?c~", "email" => "test@test.example"}
+    token = "12345." + Base64.urlsafe_encode64(payload.to_json, padding: false)
+    expect(token).to match(/[-_]/)
+
+    presenter = SimpleGoogleAuth::AuthDataPresenter.new("id_token" => token)
+    expect(presenter.email).to eq "test@test.example"
   end
 
   it "raises if id_token not provided" do
@@ -68,7 +77,13 @@ RSpec.describe SimpleGoogleAuth::AuthDataPresenter do
 
   it "raises if the id_token payload is not valid JSON" do
     expect {
-      SimpleGoogleAuth::AuthDataPresenter.new("id_token" => "12345." + Base64.strict_encode64("not json").delete("="))
+      SimpleGoogleAuth::AuthDataPresenter.new("id_token" => "12345." + Base64.urlsafe_encode64("not json", padding: false))
+    }.to raise_error(SimpleGoogleAuth::AuthDataPresenter::InvalidAuthDataError)
+  end
+
+  it "raises if the id_token payload is not valid base64url" do
+    expect {
+      SimpleGoogleAuth::AuthDataPresenter.new("id_token" => "12345.not!valid*base64")
     }.to raise_error(SimpleGoogleAuth::AuthDataPresenter::InvalidAuthDataError)
   end
 end
