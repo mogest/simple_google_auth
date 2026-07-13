@@ -44,6 +44,18 @@ describe SimpleGoogleAuth::Receiver do
 
         expect(subject).to eq [302, {"Location" => "/place"}, [" "]]
       end
+
+      it "does not follow a protocol-relative redirect path (open redirect)" do
+        expect(authentication_uri_state_path_extractor).to receive(:call).with(state).and_return('//evil.com')
+
+        expect(subject).to eq [302, {"Location" => "/"}, [" "]]
+      end
+
+      it "does not follow a backslash-prefixed redirect path (open redirect)" do
+        expect(authentication_uri_state_path_extractor).to receive(:call).with(state).and_return('/\\evil.com')
+
+        expect(subject).to eq [302, {"Location" => "/"}, [" "]]
+      end
     end
 
     context "and the authenticator rejects the login" do
@@ -59,6 +71,15 @@ describe SimpleGoogleAuth::Receiver do
     let(:params) { {"state" => "doesnotmatch", "code" => code} }
 
     it "redirects to the failed login path with a message" do
+      expect(subject).to eq [302, {"Location" => "/error?message=Invalid+state+returned+from+Google"}, [" "]]
+    end
+  end
+
+  context "when the session holds no state and the callback omits it (forged callback)" do
+    let(:state) { nil }
+    let(:params) { {"code" => code} }
+
+    it "rejects the login rather than treating two blank states as a match" do
       expect(subject).to eq [302, {"Location" => "/error?message=Invalid+state+returned+from+Google"}, [" "]]
     end
   end
