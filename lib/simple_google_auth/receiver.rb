@@ -3,7 +3,11 @@ module SimpleGoogleAuth
     def call(env)
       request = Rack::Request.new(env)
       config = SimpleGoogleAuth.config
-      ensure_params_are_correct(request, config)
+
+      # The state is single-use: remove it from the session up front so the
+      # callback URL can't be replayed, whether this attempt succeeds or fails.
+      state = request.session.delete(config.state_session_key_name)
+      ensure_params_are_correct(request, state)
 
       api = SimpleGoogleAuth::OAuth.new(config)
       auth_data = api.exchange_code_for_auth_token!(request.params["code"])
@@ -14,7 +18,7 @@ module SimpleGoogleAuth
       renew_session(request)
       request.session[config.data_session_key_name] = auth_data
 
-      path = config.authentication_uri_state_path_extractor.call(request.session[config.state_session_key_name])
+      path = config.authentication_uri_state_path_extractor.call(state)
       path = "/" unless safe_redirect_path?(path)
       [302, {"Location" => path}, [" "]]
 
@@ -26,9 +30,7 @@ module SimpleGoogleAuth
     end
 
     protected
-    def ensure_params_are_correct(request, config)
-      expected_state = request.session[config.state_session_key_name]
-
+    def ensure_params_are_correct(request, expected_state)
       if expected_state.blank? || !states_match?(request.params["state"], expected_state)
         raise Error, "Invalid state returned from Google"
       elsif request.params["error"]

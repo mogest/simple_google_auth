@@ -52,6 +52,11 @@ RSpec.describe SimpleGoogleAuth::Receiver do
       expect(session.options[:renew]).to be true
     end
 
+    it "removes the state from the session so the callback cannot be replayed" do
+      response
+      expect(session).to_not have_key(SimpleGoogleAuth.config.state_session_key_name)
+    end
+
     context "with a session store that does not support options" do
       let(:session) { {SimpleGoogleAuth.config.state_session_key_name => state} }
 
@@ -115,6 +120,11 @@ RSpec.describe SimpleGoogleAuth::Receiver do
 
     it "redirects to the failed login path with a message" do
       expect(response).to eq [302, {"Location" => "/error?message=Invalid+state+returned+from+Google"}, [" "]]
+    end
+
+    it "removes the state from the session even though the login failed" do
+      response
+      expect(session).to_not have_key(SimpleGoogleAuth.config.state_session_key_name)
     end
   end
 
