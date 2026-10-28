@@ -1,5 +1,7 @@
 # SimpleGoogleAuth
 
+> **No longer maintained.** This repository is archived and will not receive updates or security fixes. Existing releases remain available on RubyGems.
+
 Want an extremely easy integration of Google's authentication system in your Rails site?
 
 This is a dead simple gem that allows you to require a Google login for parts of your site.
